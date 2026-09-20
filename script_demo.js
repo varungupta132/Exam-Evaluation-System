@@ -1,22 +1,8 @@
-class ExamEvaluationSystem {
+class ExamEvaluationDemoSystem {
     constructor() {
         this.studentFile = null;
         this.teacherFile = null;
-        // Auto-detect backend URL based on environment
-        this.backendURL = this.getBackendURL();
         this.initializeEventListeners();
-    }
-
-    getBackendURL() {
-        // Auto-detect backend URL
-        const hostname = window.location.hostname;
-        
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            return 'http://localhost:5000';
-        } else {
-            // For GitHub Pages and other deployments
-            return 'https://exam-eval-api.herokuapp.com'; // You'll need to deploy backend here
-        }
     }
 
     initializeEventListeners() {
@@ -147,31 +133,20 @@ class ExamEvaluationSystem {
         `;
         
         try {
-            // Create FormData to send files to backend
-            const formData = new FormData();
-            formData.append('student_sheet', this.studentFile);
-            formData.append('teacher_key', this.teacherFile);
-
-            // Send to Flask backend
-            const response = await fetch(`${this.backendURL}/evaluate`, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error(`Server error: ${response.status}`);
-            }
-
-            const evaluationResults = await response.json();
+            // Simulate processing time
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // Generate demo results
+            const demoResults = this.generateDemoResults();
             
             // Display results
-            this.displayResults(evaluationResults);
+            this.displayResults(demoResults);
             
-            this.showNotification('Evaluation completed successfully!', 'success');
+            this.showNotification('Demo evaluation completed!', 'success');
 
         } catch (error) {
-            console.error('Evaluation error:', error);
-            this.showNotification(`Error during evaluation: ${error.message}`, 'error');
+            console.error('Demo error:', error);
+            this.showNotification(`Demo error: ${error.message}`, 'error');
         } finally {
             // Reset button state
             evaluateBtn.classList.remove('loading');
@@ -182,6 +157,70 @@ class ExamEvaluationSystem {
                 <span class="btn-text">Start Evaluation</span>
             `;
         }
+    }
+
+    generateDemoResults() {
+        // Generate realistic demo results
+        return {
+            overall_score: 78,
+            total_questions: 5,
+            correct_answers: 3,
+            partial_answers: 1,
+            incorrect_answers: 1,
+            detailed_evaluation: [
+                {
+                    question_number: 1,
+                    student_answer: "Paris is the capital of France",
+                    correct_answer: "Paris is the capital city of France",
+                    status: "correct",
+                    score: 10,
+                    max_score: 10,
+                    similarity: 95.2,
+                    feedback: "Excellent! Perfect answer."
+                },
+                {
+                    question_number: 2,
+                    student_answer: "4",
+                    correct_answer: "4 (four)",
+                    status: "correct",
+                    score: 10,
+                    max_score: 10,
+                    similarity: 90.0,
+                    feedback: "Correct! Numerical answer is accurate."
+                },
+                {
+                    question_number: 3,
+                    student_answer: "Jupiter is big planet",
+                    correct_answer: "Jupiter is the largest planet in our solar system",
+                    status: "partial",
+                    score: 6,
+                    max_score: 10,
+                    similarity: 65.3,
+                    feedback: "Partially correct. Missing 'largest' and 'solar system'."
+                },
+                {
+                    question_number: 4,
+                    student_answer: "Plants make food from sun",
+                    correct_answer: "Photosynthesis is the process by which plants convert sunlight into energy",
+                    status: "partial",
+                    score: 5,
+                    max_score: 10,
+                    similarity: 45.8,
+                    feedback: "Basic understanding shown but lacks scientific terminology."
+                },
+                {
+                    question_number: 5,
+                    student_answer: "Shakespeare",
+                    correct_answer: "William Shakespeare wrote Romeo and Juliet",
+                    status: "incorrect",
+                    score: 3,
+                    max_score: 10,
+                    similarity: 30.0,
+                    feedback: "Incomplete answer. Need full name and context."
+                }
+            ],
+            overall_feedback: "Good performance! You scored 39/50 (78%). Strong understanding of basic concepts. Work on providing more detailed answers."
+        };
     }
 
     displayResults(results) {
@@ -207,7 +246,7 @@ class ExamEvaluationSystem {
         // Generate detailed results HTML
         let resultsHTML = `
             <div class="result-summary">
-                <h4>📈 Evaluation Summary</h4>
+                <h4>📈 Demo Evaluation Results</h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0;">
                     <div style="text-align: center; padding: 15px; background: #f0fff0; border-radius: 8px;">
                         <div style="font-size: 1.5rem; font-weight: bold; color: #27ae60;">${results.correct_answers || 0}</div>
@@ -226,6 +265,10 @@ class ExamEvaluationSystem {
                         <div style="color: #666;">Total</div>
                     </div>
                 </div>
+                <div style="text-align: center; padding: 15px; background: #fff9e6; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f39c12;">
+                    <h4>🎯 This is a Demo Version</h4>
+                    <p>Showing sample evaluation results. For real OCR and AI processing, deploy the Flask backend with Google Vision API.</p>
+                </div>
             </div>
         `;
 
@@ -238,7 +281,7 @@ class ExamEvaluationSystem {
                         <h4>Question ${index + 1} - ${item.status.charAt(0).toUpperCase() + item.status.slice(1)} 
                             <span style="float: right; color: #666;">${item.score || 0}/${item.max_score || 10} marks</span>
                         </h4>
-                        <p><strong>Student Answer:</strong> ${item.student_answer || 'No answer detected'}</p>
+                        <p><strong>Sample Student Answer:</strong> ${item.student_answer || 'No answer detected'}</p>
                         <p><strong>Expected Answer:</strong> ${item.correct_answer || 'N/A'}</p>
                         ${item.feedback ? `<p><strong>AI Feedback:</strong> ${item.feedback}</p>` : ''}
                     </div>
@@ -286,17 +329,17 @@ class ExamEvaluationSystem {
         // Reset button state
         this.checkIfReadyToEvaluate();
         
-        this.showNotification('System reset successfully!', 'success');
+        this.showNotification('Demo reset successfully!', 'success');
     }
 
     downloadReport() {
-        // Create a simple report download
+        // Create a simple demo report
         const results = document.getElementById('detailedResults').innerText;
         const score = document.getElementById('scoreValue').innerText;
         
         const reportContent = `
-EXAM EVALUATION REPORT
-=====================
+AI EXAM EVALUATION SYSTEM - DEMO REPORT
+=======================================
 
 Overall Score: ${score}/100
 Generated on: ${new Date().toLocaleString()}
@@ -304,21 +347,32 @@ Generated on: ${new Date().toLocaleString()}
 ${results}
 
 ---
-Generated by AI Exam Evaluation System
-Powered by Google Vision AI & Python Flask
+This is a DEMO version of the AI Exam Evaluation System.
+
+For production use:
+- Deploy Flask backend with Google Vision API
+- Configure real OCR text extraction
+- Set up cloud hosting for scalability
+
+Built with ❤️ using:
+- Python Flask + Google Vision AI
+- HTML5, CSS3, JavaScript
+- Modern AI evaluation algorithms
+
+Repository: https://github.com/varungupta132/Exam-Evaluation-System
         `;
         
         const blob = new Blob([reportContent], { type: 'text/plain' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `exam_evaluation_report_${new Date().toISOString().slice(0,10)}.txt`;
+        a.download = `exam_evaluation_demo_report_${new Date().toISOString().slice(0,10)}.txt`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
         
-        this.showNotification('Report downloaded successfully!', 'success');
+        this.showNotification('Demo report downloaded!', 'success');
     }
 
     showNotification(message, type) {
@@ -352,7 +406,9 @@ Powered by Google Vision AI & Python Flask
         setTimeout(() => {
             notification.style.animation = 'slideOut 0.3s ease';
             setTimeout(() => {
-                document.body.removeChild(notification);
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
             }, 300);
         }, 3000);
     }
@@ -373,7 +429,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Initialize the system when page loads
+// Initialize the demo system when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new ExamEvaluationSystem();
+    new ExamEvaluationDemoSystem();
 });

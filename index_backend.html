@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Exam Evaluation System - Live Demo</title>
+    <title>AI Exam Evaluation System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>📚 AI Exam Evaluation System</h1>
-            <p>Upload answer sheets and get instant evaluation using AI technology</p>
-            <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
-                <strong>🎯 Live Demo Version</strong> - This shows sample evaluation results. For production use, deploy the Flask backend with Google Vision API.
-            </div>
+            <p>Upload answer sheets and get instant evaluation using Google Vision AI</p>
         </header>
 
         <div class="main-content">
@@ -24,21 +21,21 @@
                         <span class="step-number">1</span>
                         <div class="step-content">
                             <h4>Upload Student Answer Sheet</h4>
-                            <p>Upload any image file (demo purposes)</p>
+                            <p>Upload the scanned answer sheet (image format)</p>
                         </div>
                     </div>
                     <div class="step">
                         <span class="step-number">2</span>
                         <div class="step-content">
                             <h4>Upload Teacher Answer Key</h4>
-                            <p>Upload another image file for comparison</p>
+                            <p>Upload the answer key for comparison</p>
                         </div>
                     </div>
                     <div class="step">
                         <span class="step-number">3</span>
                         <div class="step-content">
-                            <h4>Get Demo Evaluation</h4>
-                            <p>See sample AI evaluation results</p>
+                            <h4>Get AI Evaluation</h4>
+                            <p>Our AI will compare and provide detailed results</p>
                         </div>
                     </div>
                 </div>
@@ -74,12 +71,12 @@
 
             <button class="evaluate-btn" id="evaluateBtn" disabled>
                 <span class="btn-icon">🔍</span>
-                <span class="btn-text">Start Demo Evaluation</span>
+                <span class="btn-text">Start Evaluation</span>
                 <div class="loader" id="loader" style="display: none;"></div>
             </button>
 
             <div class="results-section" id="resultsSection" style="display: none;">
-                <h3>📊 Demo Evaluation Results</h3>
+                <h3>📊 Evaluation Results</h3>
                 <div class="score-display">
                     <div class="score-circle">
                         <div class="score-value" id="scoreValue">--</div>
@@ -92,42 +89,17 @@
                 </div>
 
                 <div class="action-buttons">
-                    <button class="secondary-btn" id="resetBtn">🔄 Try Another Demo</button>
-                    <button class="secondary-btn" id="downloadBtn">📥 Download Demo Report</button>
+                    <button class="secondary-btn" id="resetBtn">🔄 Evaluate Another</button>
+                    <button class="secondary-btn" id="downloadBtn">📥 Download Report</button>
                 </div>
-            </div>
-        </div>
-
-        <div style="background: #f8f9fa; padding: 30px; margin: 40px 0; border-radius: 12px; text-align: center;">
-            <h3>🚀 Want the Full Version?</h3>
-            <p>This is a demo with sample results. For production deployment:</p>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;">
-                <div style="padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                    <h4>🐍 Backend</h4>
-                    <p>Deploy Flask app with Google Vision API</p>
-                </div>
-                <div style="padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                    <h4>🤖 Real OCR</h4>
-                    <p>Configure Google Cloud Vision for text extraction</p>
-                </div>
-                <div style="padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                    <h4>☁️ Cloud Deploy</h4>
-                    <p>Host on Heroku, AWS, or Google Cloud</p>
-                </div>
-            </div>
-            <div style="margin-top: 20px;">
-                <a href="https://github.com/varungupta132/Exam-Evaluation-System" target="_blank" 
-                   style="display: inline-block; padding: 12px 24px; background: #3498db; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
-                    📁 View Source Code on GitHub
-                </a>
             </div>
         </div>
 
         <footer>
-            <p>Powered by Google Vision AI • Built with Python Flask & JavaScript • <a href="https://github.com/varungupta132/Exam-Evaluation-System" target="_blank">GitHub Repository</a></p>
+            <p>Powered by Google Vision AI • Built with Python Flask & JavaScript</p>
         </footer>
     </div>
 
-    <script src="script_demo.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
