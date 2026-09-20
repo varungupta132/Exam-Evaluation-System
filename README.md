@@ -1,107 +1,175 @@
 # 🎓 AI-Based Exam Evaluation System
 
-An intelligent automated system to evaluate scanned examination answer sheets using AI technology.
+An intelligent automated system to evaluate scanned examination answer sheets using **Google Vision AI** and **Python Flask**.
 
 ## 🌟 Features
 
-- **📄 Dual Upload System**: Upload both student answer sheets and teacher answer keys
-- **🤖 AI-Powered Evaluation**: Uses OpenRouter API with Claude 3.5 Sonnet for intelligent answer comparison
-- **📊 Detailed Results**: Get comprehensive scoring with question-wise breakdown
-- **💯 Smart Scoring**: Automatic scoring out of 100 with partial credit support
-- **📱 Responsive Design**: Works seamlessly on desktop and mobile devices
-- **🎨 Modern UI**: Clean, professional interface with smooth animations
+- **🤖 Google Vision AI OCR**: Advanced text extraction from scanned answer sheets
+- **📊 Intelligent Evaluation**: AI-powered answer comparison and scoring
+- **💯 Detailed Results**: Question-wise breakdown with feedback
+- **📱 Modern Interface**: Clean, responsive web design
+- **🔄 Real-time Processing**: Instant evaluation and results
+- **📥 Report Generation**: Download detailed evaluation reports
 
-## 🚀 Tech Stack
+## 🛠️ Tech Stack
 
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **AI Integration**: OpenRouter API
-- **Image Processing**: OCR text extraction simulation
-- **Deployment**: GitHub Pages ready
+### Backend
+- **Python Flask** - Web framework
+- **Google Cloud Vision API** - OCR text extraction
+- **PIL (Pillow)** - Image processing
+- **Flask-CORS** - Cross-origin requests
 
-## 🛠️ Setup Instructions
+### Frontend  
+- **HTML5, CSS3, JavaScript** - Pure vanilla frontend
+- **Responsive Design** - Works on all devices
+- **Modern UI/UX** - Clean and intuitive interface
 
-1. **Clone the Repository**
+## 🚀 Quick Start
+
+### 1. Clone Repository
+```bash
+git clone https://github.com/varungupta132/Exam-Evaluation-System.git
+cd Exam-Evaluation-System
+```
+
+### 2. Setup Google Cloud Vision API
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create project and enable Vision API
+3. Create service account and download JSON key
+4. Set environment variable:
    ```bash
-   git clone https://github.com/varungupta132/Exam-Evaluation-System.git
-   cd Exam-Evaluation-System
+   # Windows
+   set GOOGLE_APPLICATION_CREDENTIALS=path\to\your\key.json
+   
+   # Linux/Mac  
+   export GOOGLE_APPLICATION_CREDENTIALS=path/to/your/key.json
    ```
 
-2. **Get OpenRouter API Key**
-   - Visit [OpenRouter.ai](https://openrouter.ai/)
-   - Sign up and get your API key
-   - Keep your API key ready for use
+### 3. Install Dependencies
+```bash
+# Create virtual environment
+python -m venv exam_eval_env
 
-3. **Run the Application**
-   - Open `index.html` in your browser
-   - Or serve it using a local server:
-   ```bash
-   python -m http.server 8000
-   # Or use Live Server extension in VS Code
-   ```
+# Activate it
+# Windows:
+exam_eval_env\Scripts\activate
+# Linux/Mac:
+source exam_eval_env/bin/activate
+
+# Install packages
+pip install -r requirements.txt
+```
+
+### 4. Run the Application
+```bash
+# Start Flask backend
+python app.py
+
+# Open frontend in browser
+# Option 1: Direct - open index.html
+# Option 2: HTTP server
+python -m http.server 8080
+```
+
+**Backend**: http://localhost:5000
+**Frontend**: http://localhost:8080
 
 ## 📋 How to Use
 
-1. **Enter API Key**: Input your OpenRouter API key in the designated field
-2. **Upload Student Sheet**: Upload the student's answer sheet (JPG, PNG, or PDF)
-3. **Upload Answer Key**: Upload the teacher's answer key for comparison
-4. **Evaluate**: Click "Evaluate Answer Sheet" to start AI processing
-5. **View Results**: Get detailed scores and feedback for each question
+1. **📤 Upload Student Answer Sheet**: Choose scanned image of student's answers
+2. **📝 Upload Teacher Answer Key**: Choose scanned image of correct answers  
+3. **🚀 Start Evaluation**: Click evaluate button to process
+4. **📊 View Results**: Get detailed scoring and feedback
+5. **📥 Download Report**: Save evaluation report as text file
 
-## 🎯 Key Components
+## 🔧 API Endpoints
 
-### File Upload System
-- Drag & drop support
-- File type validation
-- Size limit (10MB max)
-- Visual feedback
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | API information |
+| `/health` | GET | Health check |
+| `/evaluate` | POST | Process answer sheets |
 
-### AI Evaluation Engine
-- OCR text extraction simulation
-- Intelligent answer comparison
-- Partial credit calculation
-- Detailed feedback generation
+## 📁 Project Structure
 
-### Results Display
-- Overall score visualization
-- Question-wise breakdown
-- Color-coded results (correct/incorrect/partial)
-- Comprehensive feedback
+```
+Exam-Evaluation-System/
+├── index.html              # Frontend interface
+├── style.css               # Modern styling  
+├── script.js               # Frontend logic
+├── app.py                  # Flask backend
+├── requirements.txt        # Python dependencies
+├── setup_instructions.md   # Detailed setup guide
+├── .env.example           # Environment template
+└── README.md              # This file
+```
 
-## 🔧 API Integration
+## 🎯 How It Works
 
-The system uses OpenRouter API with the following configuration:
-- **Model**: Claude 3.5 Sonnet (anthropic/claude-3.5-sonnet)
-- **Max Tokens**: 4000
-- **Temperature**: 0.3 (for consistent evaluation)
+1. **📷 Image Upload**: Users upload student answer sheet and teacher answer key
+2. **🔍 OCR Processing**: Google Vision AI extracts text from both images
+3. **📝 Text Analysis**: System parses questions and answers from extracted text
+4. **🤖 AI Comparison**: Intelligent algorithm compares student vs. correct answers
+5. **💯 Scoring**: Generates scores based on similarity and correctness
+6. **📊 Results**: Displays detailed breakdown with feedback
 
-## 📱 Browser Support
+## ⚙️ Configuration
 
-- Chrome (recommended)
-- Firefox
-- Safari
-- Edge
+Create `.env` file from template:
+```bash
+cp .env.example .env
+# Edit .env with your settings
+```
 
 ## 🚀 Deployment
 
-This project is deployment-ready for:
-- GitHub Pages
-- Netlify
-- Vercel
-- Any static hosting service
+### Backend (Flask)
+```bash
+# Production server
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
+```
 
-## 🔒 Security
+### Frontend
+- **GitHub Pages**: Push to gh-pages branch
+- **Netlify**: Connect GitHub repo
+- **Vercel**: Import project
+- Update backend URL in `script.js` for production
 
-- API keys are handled client-side only
-- No server-side storage of sensitive data
-- Secure HTTPS API calls
+## 📊 Sample Evaluation Flow
+
+```
+Student Sheet → [OCR] → "Answer 1: Paris is capital..."
+Teacher Key   → [OCR] → "Answer 1: Paris is the capital..."
+                ↓
+           [AI Comparison]
+                ↓
+Result: 95% match → Score: 9/10 → Status: Correct
+```
+
+## 🔒 Security Notes
+
+- API credentials are server-side only
+- No sensitive data stored in frontend
+- File uploads are processed in memory
+- CORS properly configured
+
+## 📈 Future Enhancements
+
+- [ ] **Advanced NLP**: Better answer similarity matching
+- [ ] **Multi-language**: Support for different languages  
+- [ ] **Batch Processing**: Multiple answer sheets at once
+- [ ] **Database**: Store evaluation history
+- [ ] **Authentication**: User accounts and history
+- [ ] **Analytics**: Performance insights and trends
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
 ## 📄 License
 
@@ -114,10 +182,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- OpenRouter.ai for providing AI API services
-- Claude 3.5 Sonnet for intelligent evaluation capabilities
-- Modern web technologies for seamless user experience
+- **Google Cloud Vision AI** for OCR capabilities
+- **Flask** for the web framework
+- **Modern Web Technologies** for seamless user experience
 
 ---
 
-Made with ❤️ for automated exam evaluation
+**Made with ❤️ for automated exam evaluation**
+
+*For detailed setup instructions, see [setup_instructions.md](setup_instructions.md)*

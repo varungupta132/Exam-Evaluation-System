@@ -3,73 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-Based Exam Evaluation System</title>
+    <title>AI Exam Evaluation System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>AI-Based Exam Evaluation System</h1>
-            <p>Automated Answer Sheet Evaluation using AI</p>
+            <h1>📚 AI Exam Evaluation System</h1>
+            <p>Upload answer sheets and get instant evaluation using Google Vision AI</p>
         </header>
 
         <div class="main-content">
-            <div class="upload-section">
-                <div class="upload-card">
-                    <h2>Upload Student Answer Sheet</h2>
-                    <div class="upload-area" id="studentUpload">
-                        <input type="file" id="studentFile" accept="image/*,.pdf" hidden>
-                        <div class="upload-content">
-                            <div class="upload-icon">📄</div>
-                            <p>Click to upload or drag & drop</p>
-                            <span>Supports: JPG, PNG, PDF</span>
+            <div class="instruction-section">
+                <h3>📋 How it works:</h3>
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Upload Student Answer Sheet</h4>
+                            <p>Upload the scanned answer sheet (image format)</p>
                         </div>
                     </div>
-                    <div class="file-info" id="studentFileInfo"></div>
-                </div>
-
-                <div class="upload-card">
-                    <h2>Upload Teacher Answer Key</h2>
-                    <div class="upload-area" id="teacherUpload">
-                        <input type="file" id="teacherFile" accept="image/*,.pdf" hidden>
-                        <div class="upload-content">
-                            <div class="upload-icon">📋</div>
-                            <p>Click to upload or drag & drop</p>
-                            <span>Supports: JPG, PNG, PDF</span>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Upload Teacher Answer Key</h4>
+                            <p>Upload the answer key for comparison</p>
                         </div>
                     </div>
-                    <div class="file-info" id="teacherFileInfo"></div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Get AI Evaluation</h4>
+                            <p>Our AI will compare and provide detailed results</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="api-section">
-                <h3>OpenRouter API Configuration</h3>
-                <input type="password" id="apiKey" placeholder="Enter your OpenRouter API Key" class="api-input">
-                <small>Your API key is secure and not stored anywhere</small>
+            <div class="upload-section">
+                <div class="upload-card">
+                    <h3>📝 Student Answer Sheet</h3>
+                    <div class="upload-area" id="studentUpload">
+                        <input type="file" id="studentFile" accept="image/*" hidden>
+                        <div class="upload-content">
+                            <div class="upload-icon">📄</div>
+                            <p>Click to upload student's answer sheet</p>
+                            <span>Supports: JPG, PNG (Max: 5MB)</span>
+                        </div>
+                    </div>
+                    <div class="file-preview" id="studentPreview"></div>
+                </div>
+
+                <div class="upload-card">
+                    <h3>✅ Teacher Answer Key</h3>
+                    <div class="upload-area" id="teacherUpload">
+                        <input type="file" id="teacherFile" accept="image/*" hidden>
+                        <div class="upload-content">
+                            <div class="upload-icon">📋</div>
+                            <p>Click to upload teacher's answer key</p>
+                            <span>Supports: JPG, PNG (Max: 5MB)</span>
+                        </div>
+                    </div>
+                    <div class="file-preview" id="teacherPreview"></div>
+                </div>
             </div>
 
             <button class="evaluate-btn" id="evaluateBtn" disabled>
-                <span class="btn-text">Evaluate Answer Sheet</span>
-                <div class="loader" id="loader"></div>
+                <span class="btn-icon">🔍</span>
+                <span class="btn-text">Start Evaluation</span>
+                <div class="loader" id="loader" style="display: none;"></div>
             </button>
 
-            <div class="results-section" id="resultsSection">
-                <h3>Evaluation Results</h3>
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h3>📊 Evaluation Results</h3>
                 <div class="score-display">
                     <div class="score-circle">
-                        <span class="score-value" id="scoreValue">--</span>
-                        <span class="score-total">/ 100</span>
+                        <div class="score-value" id="scoreValue">--</div>
+                        <div class="score-total">out of 100</div>
                     </div>
                 </div>
                 
                 <div class="detailed-results" id="detailedResults">
                     <!-- Results will be populated here -->
                 </div>
+
+                <div class="action-buttons">
+                    <button class="secondary-btn" id="resetBtn">🔄 Evaluate Another</button>
+                    <button class="secondary-btn" id="downloadBtn">📥 Download Report</button>
+                </div>
             </div>
         </div>
 
         <footer>
-            <p>Built with ❤️ using AI Technology</p>
+            <p>Powered by Google Vision AI • Built with Python Flask & JavaScript</p>
         </footer>
     </div>
 

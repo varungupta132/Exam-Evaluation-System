@@ -1,0 +1,37 @@
+{
+  "name": "exam-evaluation-backend",
+  "version": "1.0.0",
+  "description": "Node.js backend for AI-based exam evaluation system",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "setup": "npm install"
+  },
+  "keywords": [
+    "exam",
+    "evaluation",
+    "ai",
+    "google-vision",
+    "nodejs",
+    "express"
+  ],
+  "author": "Varun Gupta",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1",
+    "@google-cloud/vision": "^4.0.2",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "uuid": "^9.0.1",
+    "helmet": "^7.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

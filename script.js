@@ -2,31 +2,35 @@ class ExamEvaluationSystem {
     constructor() {
         this.studentFile = null;
         this.teacherFile = null;
-        this.apiKey = '';
+        this.backendURL = 'http://localhost:5000'; // Flask backend URL
         this.initializeEventListeners();
     }
 
     initializeEventListeners() {
         // File upload handlers
-        this.setupFileUpload('studentUpload', 'studentFile', 'studentFileInfo');
-        this.setupFileUpload('teacherUpload', 'teacherFile', 'teacherFileInfo');
+        this.setupFileUpload('studentUpload', 'studentFile', 'studentPreview');
+        this.setupFileUpload('teacherUpload', 'teacherFile', 'teacherPreview');
         
-        // API key input
-        document.getElementById('apiKey').addEventListener('input', (e) => {
-            this.apiKey = e.target.value;
-            this.checkIfReadyToEvaluate();
-        });
-
         // Evaluate button
         document.getElementById('evaluateBtn').addEventListener('click', () => {
             this.evaluateAnswerSheet();
         });
+
+        // Reset button
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            this.resetSystem();
+        });
+
+        // Download button
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            this.downloadReport();
+        });
     }
 
-    setupFileUpload(uploadAreaId, fileInputId, fileInfoId) {
+    setupFileUpload(uploadAreaId, fileInputId, previewId) {
         const uploadArea = document.getElementById(uploadAreaId);
         const fileInput = document.getElementById(fileInputId);
-        const fileInfo = document.getElementById(fileInfoId);
+        const preview = document.getElementById(previewId);
 
         uploadArea.addEventListener('click', () => {
             fileInput.click();
@@ -34,7 +38,7 @@ class ExamEvaluationSystem {
 
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
-            uploadArea.style.background = 'rgba(102, 126, 234, 0.1)';
+            uploadArea.style.background = 'rgba(52, 152, 219, 0.1)';
         });
 
         uploadArea.addEventListener('dragleave', () => {
@@ -46,22 +50,27 @@ class ExamEvaluationSystem {
             uploadArea.style.background = '';
             const files = e.dataTransfer.files;
             if (files.length > 0) {
-                this.handleFileSelection(files[0], fileInputId, fileInfo);
+                this.handleFileSelection(files[0], fileInputId, preview, uploadArea);
             }
         });
 
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                this.handleFileSelection(e.target.files[0], fileInputId, fileInfo);
+                this.handleFileSelection(e.target.files[0], fileInputId, preview, uploadArea);
             }
         });
     }
 
-    handleFileSelection(file, inputId, fileInfoElement) {
-        const maxSize = 10 * 1024 * 1024; // 10MB
+    handleFileSelection(file, inputId, previewElement, uploadCard) {
+        const maxSize = 5 * 1024 * 1024; // 5MB
         
         if (file.size > maxSize) {
-            alert('File size should be less than 10MB');
+            this.showNotification('File size should be less than 5MB', 'error');
+            return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+            this.showNotification('Please upload only image files (JPG, PNG)', 'error');
             return;
         }
 
@@ -72,13 +81,23 @@ class ExamEvaluationSystem {
             this.teacherFile = file;
         }
 
+        // Update UI to show file is uploaded
+        uploadCard.classList.add('has-file');
+        
         // Show file info
-        fileInfoElement.innerHTML = `
-            <strong>Selected:</strong> ${file.name} (${this.formatFileSize(file.size)})
+        previewElement.innerHTML = `
+            <div class="file-info">
+                <span class="file-icon">📎</span>
+                <div>
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-size">${this.formatFileSize(file.size)}</div>
+                </div>
+                <span class="file-status">✅</span>
+            </div>
         `;
-        fileInfoElement.classList.add('show');
 
         this.checkIfReadyToEvaluate();
+        this.showNotification('File uploaded successfully!', 'success');
     }
 
     formatFileSize(bytes) {
@@ -89,139 +108,67 @@ class ExamEvaluationSystem {
 
     checkIfReadyToEvaluate() {
         const evaluateBtn = document.getElementById('evaluateBtn');
-        const isReady = this.studentFile && this.teacherFile && this.apiKey.trim();
+        const isReady = this.studentFile && this.teacherFile;
         
         evaluateBtn.disabled = !isReady;
+        
+        if (isReady) {
+            evaluateBtn.innerHTML = `
+                <span class="btn-icon">🚀</span>
+                <span class="btn-text">Start Evaluation</span>
+            `;
+        }
     }
 
     async evaluateAnswerSheet() {
         const evaluateBtn = document.getElementById('evaluateBtn');
+        const loader = document.getElementById('loader');
+        
+        // Show loading state
         evaluateBtn.classList.add('loading');
+        evaluateBtn.disabled = true;
+        loader.style.display = 'inline-block';
+        evaluateBtn.innerHTML = `
+            <span class="btn-text">Processing...</span>
+            <div class="loader"></div>
+        `;
         
         try {
-            // Convert files to base64 for processing
-            const studentImageData = await this.fileToBase64(this.studentFile);
-            const teacherImageData = await this.fileToBase64(this.teacherFile);
+            // Create FormData to send files to backend
+            const formData = new FormData();
+            formData.append('student_sheet', this.studentFile);
+            formData.append('teacher_key', this.teacherFile);
 
-            // Extract text from both images using OCR simulation
-            const studentAnswers = await this.extractTextFromImage(studentImageData, 'student');
-            const teacherAnswers = await this.extractTextFromImage(teacherImageData, 'teacher');
+            // Send to Flask backend
+            const response = await fetch(`${this.backendURL}/evaluate`, {
+                method: 'POST',
+                body: formData
+            });
 
-            // Evaluate answers using OpenRouter API
-            const evaluationResults = await this.evaluateWithAI(studentAnswers, teacherAnswers);
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
 
+            const evaluationResults = await response.json();
+            
             // Display results
             this.displayResults(evaluationResults);
+            
+            this.showNotification('Evaluation completed successfully!', 'success');
 
         } catch (error) {
             console.error('Evaluation error:', error);
-            alert('Error during evaluation: ' + error.message);
+            this.showNotification(`Error during evaluation: ${error.message}`, 'error');
         } finally {
+            // Reset button state
             evaluateBtn.classList.remove('loading');
+            evaluateBtn.disabled = false;
+            loader.style.display = 'none';
+            evaluateBtn.innerHTML = `
+                <span class="btn-icon">🚀</span>
+                <span class="btn-text">Start Evaluation</span>
+            `;
         }
-    }
-
-    async fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
-
-    async extractTextFromImage(imageData, type) {
-        // Simulate OCR text extraction
-        // In real implementation, this would use Google Vision API or similar
-        
-        const prompt = `Extract text from this ${type} answer sheet image. 
-        Focus on identifying questions and their corresponding answers.
-        Return the extracted text in a structured format.`;
-
-        try {
-            const response = await this.callOpenRouterAPI(prompt, imageData);
-            return response;
-        } catch (error) {
-            throw new Error(`Failed to extract text from ${type} sheet: ` + error.message);
-        }
-    }
-
-    async evaluateWithAI(studentAnswers, teacherAnswers) {
-        const evaluationPrompt = `
-        You are an AI exam evaluator. Compare the student's answers with the teacher's answer key and provide evaluation.
-
-        TEACHER'S ANSWER KEY:
-        ${teacherAnswers}
-
-        STUDENT'S ANSWERS:
-        ${studentAnswers}
-
-        Please provide:
-        1. Overall score out of 100
-        2. Detailed evaluation for each question
-        3. Feedback and areas for improvement
-
-        Format your response as JSON with this structure:
-        {
-            "overallScore": 85,
-            "totalQuestions": 10,
-            "correctAnswers": 8,
-            "partialAnswers": 1,
-            "incorrectAnswers": 1,
-            "detailedEvaluation": [
-                {
-                    "questionNumber": 1,
-                    "status": "correct|incorrect|partial",
-                    "studentAnswer": "...",
-                    "correctAnswer": "...",
-                    "score": 10,
-                    "feedback": "..."
-                }
-            ],
-            "overallFeedback": "Overall performance analysis..."
-        }
-        `;
-
-        try {
-            const response = await this.callOpenRouterAPI(evaluationPrompt);
-            return JSON.parse(response);
-        } catch (error) {
-            throw new Error('Failed to evaluate answers: ' + error.message);
-        }
-    }
-
-    async callOpenRouterAPI(prompt, imageData = null) {
-        const messages = [{
-            role: "user",
-            content: imageData ? [
-                { type: "text", text: prompt },
-                { type: "image_url", image_url: { url: imageData } }
-            ] : prompt
-        }];
-
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${this.apiKey}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': window.location.origin,
-                'X-Title': 'AI Exam Evaluation System'
-            },
-            body: JSON.stringify({
-                model: "anthropic/claude-3.5-sonnet",
-                messages: messages,
-                max_tokens: 4000,
-                temperature: 0.3
-            })
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error?.message || 'API request failed');
-        }
-
-        const data = await response.json();
-        return data.choices[0].message.content;
     }
 
     displayResults(results) {
@@ -230,53 +177,188 @@ class ExamEvaluationSystem {
         const detailedResults = document.getElementById('detailedResults');
 
         // Show overall score
-        scoreValue.textContent = results.overallScore || '--';
+        scoreValue.textContent = results.overall_score || 0;
+        
+        // Update score circle color based on performance
+        const scoreCircle = scoreValue.parentElement;
+        const score = results.overall_score || 0;
+        
+        if (score >= 80) {
+            scoreCircle.style.background = '#27ae60'; // Green for good score
+        } else if (score >= 60) {
+            scoreCircle.style.background = '#f39c12'; // Orange for average
+        } else {
+            scoreCircle.style.background = '#e74c3c'; // Red for low score
+        }
         
         // Generate detailed results HTML
         let resultsHTML = `
             <div class="result-summary">
-                <h4>Evaluation Summary</h4>
-                <p><strong>Total Questions:</strong> ${results.totalQuestions || 0}</p>
-                <p><strong>Correct Answers:</strong> ${results.correctAnswers || 0}</p>
-                <p><strong>Partial Credit:</strong> ${results.partialAnswers || 0}</p>
-                <p><strong>Incorrect Answers:</strong> ${results.incorrectAnswers || 0}</p>
-                <p><strong>Overall Score:</strong> ${results.overallScore || 0}/100</p>
+                <h4>📈 Evaluation Summary</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0;">
+                    <div style="text-align: center; padding: 15px; background: #f0fff0; border-radius: 8px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #27ae60;">${results.correct_answers || 0}</div>
+                        <div style="color: #666;">Correct</div>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #fff8f0; border-radius: 8px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #f39c12;">${results.partial_answers || 0}</div>
+                        <div style="color: #666;">Partial</div>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #fff0f0; border-radius: 8px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #e74c3c;">${results.incorrect_answers || 0}</div>
+                        <div style="color: #666;">Incorrect</div>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #f0f8ff; border-radius: 8px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #3498db;">${results.total_questions || 0}</div>
+                        <div style="color: #666;">Total</div>
+                    </div>
+                </div>
             </div>
         `;
 
-        if (results.detailedEvaluation && results.detailedEvaluation.length > 0) {
-            resultsHTML += '<div class="detailed-breakdown"><h4>Question-wise Breakdown</h4>';
+        if (results.detailed_evaluation && results.detailed_evaluation.length > 0) {
+            resultsHTML += '<h4>📝 Question-wise Analysis</h4>';
             
-            results.detailedEvaluation.forEach(item => {
+            results.detailed_evaluation.forEach((item, index) => {
                 resultsHTML += `
                     <div class="result-item ${item.status}">
-                        <h4>Question ${item.questionNumber} - ${item.status.toUpperCase()} (${item.score || 0} marks)</h4>
-                        <p><strong>Student Answer:</strong> ${item.studentAnswer || 'No answer detected'}</p>
-                        <p><strong>Expected Answer:</strong> ${item.correctAnswer || 'N/A'}</p>
-                        <p><strong>Feedback:</strong> ${item.feedback || 'No specific feedback'}</p>
+                        <h4>Question ${index + 1} - ${item.status.charAt(0).toUpperCase() + item.status.slice(1)} 
+                            <span style="float: right; color: #666;">${item.score || 0}/${item.max_score || 10} marks</span>
+                        </h4>
+                        <p><strong>Student Answer:</strong> ${item.student_answer || 'No answer detected'}</p>
+                        <p><strong>Expected Answer:</strong> ${item.correct_answer || 'N/A'}</p>
+                        ${item.feedback ? `<p><strong>AI Feedback:</strong> ${item.feedback}</p>` : ''}
                     </div>
                 `;
             });
-            
-            resultsHTML += '</div>';
         }
 
-        if (results.overallFeedback) {
+        if (results.overall_feedback) {
             resultsHTML += `
                 <div class="result-item">
-                    <h4>Overall Feedback</h4>
-                    <p>${results.overallFeedback}</p>
+                    <h4>💡 Overall Feedback</h4>
+                    <p>${results.overall_feedback}</p>
                 </div>
             `;
         }
 
         detailedResults.innerHTML = resultsHTML;
-        resultsSection.classList.add('show');
+        resultsSection.style.display = 'block';
         
-        // Scroll to results
+        // Scroll to results smoothly
         resultsSection.scrollIntoView({ behavior: 'smooth' });
     }
+
+    resetSystem() {
+        // Reset file selections
+        this.studentFile = null;
+        this.teacherFile = null;
+        
+        // Clear file inputs
+        document.getElementById('studentFile').value = '';
+        document.getElementById('teacherFile').value = '';
+        
+        // Clear previews
+        document.getElementById('studentPreview').innerHTML = '';
+        document.getElementById('teacherPreview').innerHTML = '';
+        
+        // Remove file upload styling
+        document.querySelectorAll('.upload-card').forEach(card => {
+            card.classList.remove('has-file');
+        });
+        
+        // Hide results
+        document.getElementById('resultsSection').style.display = 'none';
+        
+        // Reset button state
+        this.checkIfReadyToEvaluate();
+        
+        this.showNotification('System reset successfully!', 'success');
+    }
+
+    downloadReport() {
+        // Create a simple report download
+        const results = document.getElementById('detailedResults').innerText;
+        const score = document.getElementById('scoreValue').innerText;
+        
+        const reportContent = `
+EXAM EVALUATION REPORT
+=====================
+
+Overall Score: ${score}/100
+Generated on: ${new Date().toLocaleString()}
+
+${results}
+
+---
+Generated by AI Exam Evaluation System
+Powered by Google Vision AI & Python Flask
+        `;
+        
+        const blob = new Blob([reportContent], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `exam_evaluation_report_${new Date().toISOString().slice(0,10)}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        this.showNotification('Report downloaded successfully!', 'success');
+    }
+
+    showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 300px;
+        `;
+        
+        if (type === 'success') {
+            notification.style.background = '#27ae60';
+            notification.textContent = `✅ ${message}`;
+        } else {
+            notification.style.background = '#e74c3c';
+            notification.textContent = `❌ ${message}`;
+        }
+        
+        document.body.appendChild(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
 }
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
 
 // Initialize the system when page loads
 document.addEventListener('DOMContentLoaded', () => {
